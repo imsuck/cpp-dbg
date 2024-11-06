@@ -1,4 +1,8 @@
-# How to use (for competitive programmers)
+### Requires >=C++17
+# How to use
+Get a copy of [debug.hpp](https://github.com/imsuck/cpp-dbg/blob/main/debug.hpp).
+
+In your source code:
 ```cpp
 #ifdef LOCAL
 #include "path/to/debug.hpp"
@@ -9,8 +13,8 @@ namespace dbg::options {
 #define dbg(...) (void(0))
 #define mark_dbg() if (false)
 #endif
-
 ```
+Add `-DLOCAL` (or maybe `/DLOCAL`) to your compilation flags.
 
 # Options
 - Trivial string (disable new line for containers containing strings)
@@ -29,6 +33,7 @@ With `bundle.hpp`:
 ```cpp
 #include "src/debug.hpp"
 ```
+To bundle:
 ```sh
-oj-bundle bundle.hpp > debug.hpp
+$ oj-bundle bundle.hpp > debug.hpp
 ```
