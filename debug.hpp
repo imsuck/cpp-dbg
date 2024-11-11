@@ -8,7 +8,7 @@ namespace dbg {
 
     inline int indent_lvl = 0;
     inline string get_indent() { return string(2 * indent_lvl, ' '); }
-}
+} // namespace dbg
 
 #line 2 "src/info.hpp"
 
@@ -227,7 +227,7 @@ namespace dbg {
             const string sep = trivial_value ? ", " : ",\n" + get_indent();
 
             vector<string> vals;
-            for (auto &elem : a) vals.push_back(dbg_info(elem));
+            for (auto &&elem : a) vals.push_back(dbg_info(elem));
 
             string output = open + (trivial_value ? "" : "\n" + get_indent());
             bool first_elem = true;
@@ -248,7 +248,7 @@ namespace dbg {
             indent_lvl++;
             const string sep = "\n" + get_indent();
             vector<string> vals;
-            for (auto &[key, val] : mp)
+            for (auto &&[key, val] : mp)
                 vals.push_back(dbg_info(key) + " -> " + dbg_info(val));
 
             string output = "{\n" + get_indent();
@@ -296,7 +296,7 @@ namespace dbg {
 #if defined(__GNUC__) && !defined(__llvm__)
             return string_view{fn_name.data() + 51, fn_name.size() - 52};
 #elif defined(__llvm__)
-            return string_view{fn_name.data() + 22, fn_name.size() - 23};
+            return string_view{fn_name.data() + 36, fn_name.size() - 37};
 #endif
         }
         template<typename T> constexpr auto type_of(T &&x) {
