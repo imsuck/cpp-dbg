@@ -25,6 +25,24 @@ namespace dbg {
     }
 } // namespace dbg
 
+#line 2 "src/iterator.hpp"
+
+namespace dbg {
+    namespace _detail {
+        template<class T>
+        inline auto _iter_begin(T &&x, int) -> decltype(x.begin()) {
+            return x.begin();
+        }
+        template<class T>
+        inline auto _iter_begin(T &&x, long) -> decltype(begin(x)) {
+            return begin(x);
+        }
+        template<class T>
+        inline auto iter_begin(T &&x) -> decltype(_iter_begin(x, 0)) {
+            return _iter_begin(x, 0);
+        }
+    } // namespace _detail
+} // namespace dbg
 #line 2 "src/type_check.hpp"
 
 #include <map>
@@ -44,7 +62,7 @@ namespace dbg {
         };
     }
 }
-#line 12 "src/type_check.hpp"
+#line 13 "src/type_check.hpp"
 
 namespace dbg {
     using namespace std;
@@ -180,7 +198,7 @@ namespace dbg {
         // Iterable ------------------------------------------------------------
         template<typename T> struct iterable {
             template<typename TT>
-            static auto test(int) -> decltype(declval<TT>().begin(),
+            static auto test(int) -> decltype(iter_begin(declval<TT>()),
                                               true_type());
             template<typename TT> static auto test(...) -> false_type;
 
@@ -210,7 +228,7 @@ namespace dbg {
             _detail::is_trivial<_detail::remove_cvref_t<T>>::value;
     } // namespace _detail
 } // namespace dbg
-#line 5 "src/containers.hpp"
+#line 6 "src/containers.hpp"
 
 namespace dbg {
     using namespace std;
@@ -223,7 +241,7 @@ namespace dbg {
         inline string dbg_iterable(T &&a, string open, string close) {
             indent_lvl++;
             const bool trivial_value =
-                _detail::is_trivial_v<decltype(*a.begin())>;
+                _detail::is_trivial_v<decltype(*iter_begin(a))>;
             const string sep = trivial_value ? ", " : ",\n" + get_indent();
 
             vector<string> vals;
@@ -325,11 +343,12 @@ namespace dbg {
                  enable_if_t<!is_floating_point_v<remove_cvref_t<T>>, int> = 1>
         inline string dbg_arithmetic(T n) {
             const bool neg = n < 0;
-            if (neg) n = -n;
+            make_unsigned_t<remove_cvref_t<T>> x = n;
+            if (neg) x = -x;
             string output;
-            while (n != 0) {
-                output += char(n % 10 + '0');
-                n /= 10;
+            while (x != 0) {
+                output += char(x % 10 + '0');
+                x /= 10;
             }
             if (neg) output += '-';
             reverse(output.begin(), output.end());
