@@ -99,10 +99,9 @@ namespace dbg {
         // Arithmetic ----------------------------------------------------------
         template<typename T> struct is_vec_bool_ref {
             template<typename TT>
-            static auto
-            test(int) -> enable_if_t<
-                          is_same_v<decay_t<TT>, vector<bool>::const_reference>,
-                          true_type>;
+            static auto test(int) -> enable_if_t<
+                is_same_v<decay_t<TT>, vector<bool>::const_reference>,
+                true_type>;
             template<typename> static auto test(...) -> false_type;
 
             static constexpr bool value = decltype(test<T>(0))::value;
@@ -114,8 +113,9 @@ namespace dbg {
 #ifdef __SIZEOF_INT128__
         template<
             typename T,
-            enable_if_t<is_any_of_v<remove_cvref_t<T>, __int128_t, __uint128_t>,
-                        int> = 1>
+            enable_if_t<
+                is_any_of_v<remove_cvref_t<T>, __int128_t, __uint128_t>,
+                int> = 1>
         inline constexpr bool is_arithmetic = true;
 #endif
 
@@ -129,9 +129,8 @@ namespace dbg {
         // Streamable ----------------------------------------------------------
         template<typename T> struct streamable {
             template<typename TT>
-            static auto test(int) -> decltype(declval<ostream>()
-                                                  << declval<TT>(),
-                                              true_type());
+            static auto test(int)
+                -> decltype(declval<ostream>() << declval<TT>(), true_type());
             template<typename TT> static auto test(...) -> false_type;
 
             static constexpr bool value = decltype(test<T>(0))::value;
@@ -150,7 +149,7 @@ namespace dbg {
 
         template<typename> struct is_tuple : false_type {};
         template<typename... Args>
-        struct is_pair<tuple<Args...>> : true_type {};
+        struct is_tuple<tuple<Args...>> : true_type {};
         template<typename T>
         inline constexpr bool is_tuple_v =
             is_tuple<_detail::remove_cvref_t<T>>::value;
@@ -198,8 +197,8 @@ namespace dbg {
         // Iterable ------------------------------------------------------------
         template<typename T> struct iterable {
             template<typename TT>
-            static auto test(int) -> decltype(iter_begin(declval<TT>()),
-                                              true_type());
+            static auto test(int)
+                -> decltype(iter_begin(declval<TT>()), true_type());
             template<typename TT> static auto test(...) -> false_type;
 
             static constexpr bool value = decltype(test<T>(0))::value;
@@ -339,8 +338,9 @@ namespace dbg {
 namespace dbg {
     using namespace std;
     namespace _detail {
-        template<typename T,
-                 enable_if_t<!is_floating_point_v<remove_cvref_t<T>>, int> = 1>
+        template<
+            typename T,
+            enable_if_t<!is_floating_point_v<remove_cvref_t<T>>, int> = 1>
         inline string dbg_arithmetic(T n) {
             const bool neg = n < 0;
             make_unsigned_t<remove_cvref_t<T>> x = n;
@@ -355,8 +355,9 @@ namespace dbg {
             if (output.empty()) output = "0";
             return output;
         }
-        template<typename T,
-                 enable_if_t<is_floating_point_v<remove_cvref_t<T>>, int> = 1>
+        template<
+            typename T,
+            enable_if_t<is_floating_point_v<remove_cvref_t<T>>, int> = 1>
         inline string dbg_arithmetic(T x) {
             return to_string(x);
         }
@@ -373,13 +374,17 @@ namespace dbg {
             return "(" + dbg_info(p.first) + ", " + dbg_info(p.second) + ")";
         }
 
-        template<typename... Ts, size_t idx = 0>
+        template<size_t idx = 0, typename... Ts>
         inline string dbg_tuple_helper(const tuple<Ts...> &t) {
-            return "";
+            if constexpr (idx == sizeof...(Ts)) return "";
+            string output = idx ? ", " : "";
+            if constexpr (idx < sizeof...(Ts))
+                output += dbg_info(get<idx>(t)) + dbg_tuple_helper<idx + 1>(t);
+            return output;
         }
         template<typename... Ts>
         inline string dbg_tuple(const tuple<Ts...> &t) {
-            return "(" + dbg_tuple_helper<Ts...>(t) + ")";
+            return "(" + dbg_tuple_helper(t) + ")";
         }
 
         template<typename T> inline string dbg_streamable(T &&x) {
@@ -461,4 +466,3 @@ namespace dbg {
 
 #define dbg(a...) dbg::dbg_impl({__FILE__, __LINE__, __func__}, #a, a)
 #define debug()
-#line 2 "debug.hpp"
