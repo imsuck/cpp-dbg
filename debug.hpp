@@ -222,19 +222,28 @@ namespace dbg {
         // Iterable ------------------------------------------------------------
         template<typename T, typename D = void> struct iterable : false_type {};
         template<typename T>
-        struct iterable<T, void_t<decltype(iter_begin(declval<T>()))>> : true_type {
-        };
+        struct iterable<T, void_t<decltype(iter_begin(declval<T>()))>>
+            : true_type {};
         template<typename T>
         inline constexpr bool iterable_v = iterable<remove_cvref_t<T>>::value;
 
         // Multiline utility stuff
+        // user defined T::is_simple
+        template<typename _T, typename D = void>
+        struct is_simple : false_type {};
+        template<typename T>
+        struct is_simple<
+            T,
+            void_t<decltype(_detail::remove_cvref_t<T>::is_simple)>>
+            : true_type {};
+        // heuristics
         template<typename _T, typename T = _detail::remove_cvref_t<_T>>
         struct is_trivial {
             static constexpr bool value =
                 (std::is_trivial_v<T> && is_standard_layout_v<T> &&
                  !is_array_v<T>) ||
                 (is_string<T> && dbg::options::trivial_string()) ||
-                is_vec_bool_ref<T>::value;
+                is_vec_bool_ref<T>::value || is_simple<T>::value;
         };
         template<typename T, typename U> struct is_trivial<pair<T, U>> {
             static constexpr bool value =
