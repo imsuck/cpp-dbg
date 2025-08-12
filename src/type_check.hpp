@@ -43,28 +43,54 @@ namespace dbg {
         template<typename T>
         using remove_cvref_t = typename remove_cvref<T>::type;
 
-        // Arithmetic ----------------------------------------------------------
+#ifdef __SIZEOF_INT128__
+        template<class T>
+        using is_signed_int128 = conditional_t<
+            is_same_v<T, __int128_t> || is_same_v<T, __int128>,
+            true_type,
+            false_type>;
+        template<class T>
+        using make_unsigned_t = conditional_t<
+            is_signed_int128<T>::value,
+            __uint128_t,
+            conditional_t<
+                is_signed_v<T>,
+                std::make_unsigned_t<T>,
+                common_type_t<T>>>;
+#else
+        template<class T>
+        using make_unsigned_t = std::conditional_t<
+            is_signed_v<T>,
+            std::make_unsigned<T>,
+            common_type<T>>;
+#endif
+
+        // Arithmetic
+        // ----------------------------------------------------------
         template<typename T> struct is_vec_bool_ref {
             template<typename TT>
             static auto test(int) -> enable_if_t<
                 is_same_v<decay_t<TT>, vector<bool>::const_reference>,
                 true_type>;
+            template<typename TT>
+            static auto test(long) -> enable_if_t<
+                is_same_v<decay_t<TT>, vector<bool>::reference>,
+                true_type>;
             template<typename> static auto test(...) -> false_type;
 
             static constexpr bool value = decltype(test<T>(0))::value;
         };
+#ifdef __SIZEOF_INT128__
+        template<typename T>
+        inline constexpr bool is_int128_v =
+            is_any_of_v<remove_cvref_t<T>, __int128_t, __uint128_t>;
+#else
+        template<typename> inline constexpr bool is_int128_v = false;
+#endif
         template<typename T>
         inline constexpr bool is_arithmetic_v =
-            std::is_arithmetic_v<remove_cvref_t<T>> ||
+            std::is_arithmetic_v<remove_cvref_t<T>> || is_int128_v<T> ||
             is_vec_bool_ref<T>::value;
-#ifdef __SIZEOF_INT128__
-        template<
-            typename T,
-            enable_if_t<
-                is_any_of_v<remove_cvref_t<T>, __int128_t, __uint128_t>,
-                int> = 1>
-        inline constexpr bool is_arithmetic = true;
-#endif
 
         // String --------------------------------------------------------------
         template<typename T>
@@ -74,13 +100,12 @@ namespace dbg {
             is_convertible_v<T, string_view> && !is_nullptr<T>;
 
         // Streamable ----------------------------------------------------------
-        template<typename T> struct streamable {
-            template<typename TT>
-            static auto test(int)
-                -> decltype(declval<ostream>() << declval<TT>(), true_type());
-            template<typename TT> static auto test(...) -> false_type;
-
-            static constexpr bool value = decltype(test<T>(0))::value;
+        template<typename T, typename D = void>
+        struct streamable : false_type {};
+        template<typename T>
+        struct streamable<
+            T,
+            void_t<decltype(declval<ostream>() << declval<T>())>> : true_type {
         };
         template<typename T>
         inline constexpr bool streamable_v =
@@ -142,13 +167,9 @@ namespace dbg {
         inline constexpr bool is_queue_v = is_queue<remove_cvref_t<T>>::value;
 
         // Iterable ------------------------------------------------------------
-        template<typename T> struct iterable {
-            template<typename TT>
-            static auto test(int)
-                -> decltype(iter_begin(declval<TT>()), true_type());
-            template<typename TT> static auto test(...) -> false_type;
-
-            static constexpr bool value = decltype(test<T>(0))::value;
+        template<typename T, typename D = void> struct iterable : false_type {};
+        template<typename T>
+        struct iterable<T, void_t<decltype(iter_begin(declval<T>()))>> : true_type {
         };
         template<typename T>
         inline constexpr bool iterable_v = iterable<remove_cvref_t<T>>::value;
@@ -159,7 +180,8 @@ namespace dbg {
             static constexpr bool value =
                 (std::is_trivial_v<T> && is_standard_layout_v<T> &&
                  !is_array_v<T>) ||
-                (is_string<T> && dbg::options::trivial_string());
+                (is_string<T> && dbg::options::trivial_string()) ||
+                is_vec_bool_ref<T>::value;
         };
         template<typename T, typename U> struct is_trivial<pair<T, U>> {
             static constexpr bool value =
