@@ -1,10 +1,11 @@
 #pragma once
 
+#include <string>
+
 #include "containers.hpp"
 #include "other.hpp"
 #include "trivial.hpp"
 #include "type_check.hpp"
-#include <string>
 
 namespace dbg {
     namespace _detail {

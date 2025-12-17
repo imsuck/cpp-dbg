@@ -1,10 +1,11 @@
 #pragma once
 
-#include "info_fwd.hpp"
-#include "type_check.hpp"
 #include <algorithm>
 #include <sstream>
 #include <string>
+
+#include "info_fwd.hpp"
+#include "type_check.hpp"
 
 namespace dbg {
     using namespace std;
@@ -45,17 +46,16 @@ namespace dbg {
             return "(" + dbg_info(p.first) + ", " + dbg_info(p.second) + ")";
         }
 
-        template<size_t idx = 0, typename... Ts>
-        inline string dbg_tuple_helper(const tuple<Ts...> &t) {
-            if constexpr (idx == sizeof...(Ts)) return "";
-            string output = idx ? ", " : "";
-            if constexpr (idx < sizeof...(Ts))
-                output += dbg_info(get<idx>(t)) + dbg_tuple_helper<idx + 1>(t);
-            return output;
-        }
         template<typename... Ts>
         inline string dbg_tuple(const tuple<Ts...> &t) {
-            return "(" + dbg_tuple_helper(t) + ")";
+            if constexpr (sizeof...(Ts) == 0) {
+                return "()";
+            } else {
+                string result = "(";
+                size_t i = 0;
+                ((result += (i++ > 0 ? ", " : "") + dbg_info(get<Ts>(t))), ...);
+                return result + ")";
+            }
         }
 
         template<typename T> inline string dbg_streamable(T &&x) {

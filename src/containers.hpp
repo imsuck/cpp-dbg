@@ -22,14 +22,9 @@ namespace dbg {
             for (auto &&elem : a) vals.push_back(dbg_info(elem));
 
             string output = open + (trivial_value ? "" : "\n" + get_indent());
-            bool first_elem = true;
-            for (string &val : vals) {
-                if (first_elem) {
-                    output += val;
-                    first_elem = false;
-                } else {
-                    output += sep + val;
-                }
+            for (size_t i = 0; i < vals.size(); ++i) {
+                if (i > 0) output += sep;
+                output += vals[i];
             }
             indent_lvl--;
             output += (trivial_value ? "" : "\n" + get_indent()) + close;
@@ -44,14 +39,9 @@ namespace dbg {
                 vals.push_back(dbg_info(key) + " -> " + dbg_info(val));
 
             string output = "{\n" + get_indent();
-            bool first_elem = true;
-            for (string &val : vals) {
-                if (first_elem) {
-                    output += val;
-                    first_elem = false;
-                } else {
-                    output += sep + val;
-                }
+            for (size_t i = 0; i < vals.size(); ++i) {
+                if (i > 0) output += sep;
+                output += vals[i];
             }
             indent_lvl--;
             output += "\n" + get_indent() + "}";

@@ -20,27 +20,33 @@ namespace dbg {
             string func_name;
         };
 
-        template<typename...> string fmt() { return ""; }
-        template<typename T, typename... Args>
-        string fmt(T &&x, Args &&...args) {
-            return dbg_info(x) + (sizeof...(args) ? ", " + fmt(args...) : "");
+        template<typename... Args>
+        string fmt(Args &&...args) {
+            if constexpr (sizeof...(Args) == 0) {
+                return "";
+            } else {
+                vector<string> parts = {dbg_info(args)...};
+                string result;
+                for (size_t i = 0; i < parts.size(); ++i) {
+                    if (i > 0) result += ", ";
+                    result += parts[i];
+                }
+                return result;
+            }
         }
     }; // namespace _detail
 
     template<typename... Args>
     void dbg_impl(_detail::src_loc loc, string args_str, Args &&...args) {
-        const bool multi_arg = sizeof...(args) > 1;
         const string label =
             "[\e[33m" + loc.func_name + "\e[0m:" + to_string(loc.line) + "]";
 
         string vals = _detail::fmt(args...);
 
-        if (multi_arg) {
-            args_str = "[" + args_str + "]";
-            vals = "[" + vals + "]";
-        }
+        const string output = label + " " +
+            (sizeof...(args) > 1 ? "[" + args_str + "]" : args_str) + " = " +
+            (sizeof...(args) > 1 ? "[" + vals + "]" : vals);
 
-        const string output = label + " " + args_str + " = " + vals;
         cerr << output << "\n";
     }
 } // namespace dbg
