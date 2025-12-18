@@ -13,5 +13,5 @@ IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
 IndentWidth: 4
 NamespaceIndentation: All
-SkipMacroDefinitionBody: true
+SkipMacroDefinitionBody: false
 SpaceAfterTemplateKeyword: false
