@@ -33,6 +33,25 @@ namespace dbg {
         static bool value() { return (is_trivial<Ts>::value() && ...); }
     };
 
+    // Specialization for optional - trivial if the contained type is trivial
+    template<typename T> struct is_trivial<std::optional<T>> {
+        static bool value() { return is_trivial<T>::value(); }
+    };
+
+    // Specialization for pointers - always trivial
+    template<typename T> struct is_trivial<T *> {
+        static bool value() { return true; }
+    };
+    template<typename T> struct is_trivial<T *const> {
+        static bool value() { return true; }
+    };
+    template<typename T> struct is_trivial<T *volatile> {
+        static bool value() { return true; }
+    };
+    template<typename T> struct is_trivial<T *const volatile> {
+        static bool value() { return true; }
+    };
+
     template<typename T> inline bool is_trivial_v(const T &) {
         return is_trivial<T>::value();
     }

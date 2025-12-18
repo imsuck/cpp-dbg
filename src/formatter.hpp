@@ -344,102 +344,47 @@ namespace dbg {
                 return format_brace_container(cont, indent);
             }
 
-            // For ordered multisets (std::multiset), use upper_bound
-            if constexpr (is_multiset<typename std::remove_cv_t<
-                              std::remove_reference_t<Container>>>::value) {
-                std::string result = "{";
-                bool first = true;
-                size_t count = 0;
+            // Use equal_range for both ordered and unordered multisets
+            std::string result = "{";
+            bool first = true;
+            size_t count = 0;
 
-                auto it = cont.begin();
-                while (it != cont.end()) {
-                    if (options::max_container_elements != -1 &&
-                        count >= static_cast<size_t>(
-                                     options::max_container_elements
-                                 )) {
-                        result += ", ...";
-                        break;
-                    }
-
-                    auto next_it = cont.upper_bound(*it);
-                    size_t multiplicity = std::distance(it, next_it);
-
-                    if (!first) result += ", ";
-                    if (!is_trivial_v(*it)) {
-                        result += "\n" + indent_str(indent + 1);
-                    }
-
-                    result += format_value(*it, indent + 1);
-                    if (multiplicity > 1) {
-                        result += with_color(
-                            " (" + std::to_string(multiplicity) + ")",
-                            Color::BrightBlack
-                        );
-                    }
-
-                    first = false;
-                    it = next_it;
-                    ++count;
+            auto it = cont.begin();
+            while (it != cont.end()) {
+                if (options::max_container_elements != -1 &&
+                    count >=
+                        static_cast<size_t>(options::max_container_elements)) {
+                    result += ", ...";
+                    break;
                 }
 
-                if (!is_trivial_type_v<typename Container::value_type>()) {
-                    result += "\n" + indent_str(indent);
-                }
-                result += "}";
+                auto range = cont.equal_range(*it);
+                size_t multiplicity = std::distance(range.first, range.second);
 
-                return result;
-            } else if constexpr (is_unordered_multiset<
-                                     typename std::remove_cv_t<
-                                         std::remove_reference_t<Container>>>::
-                                     value) {
-                // For unordered multisets, use equal_range to handle
-                // multiplicity
-                std::string result = "{";
-                bool first = true;
-                size_t count = 0;
-
-                auto it = cont.begin();
-                while (it != cont.end()) {
-                    if (options::max_container_elements != -1 &&
-                        count >= static_cast<size_t>(
-                                     options::max_container_elements
-                                 )) {
-                        result += ", ...";
-                        break;
-                    }
-
-                    auto range = cont.equal_range(*it);
-                    size_t multiplicity =
-                        std::distance(range.first, range.second);
-
-                    if (!first) result += ", ";
-                    if (!is_trivial_v(*it)) {
-                        result += "\n" + indent_str(indent + 1);
-                    }
-
-                    result += format_value(*it, indent + 1);
-                    if (multiplicity > 1) {
-                        result += with_color(
-                            " (" + std::to_string(multiplicity) + ")",
-                            Color::BrightBlack
-                        );
-                    }
-
-                    first = false;
-                    it = range.second;
-                    ++count;
+                if (!first) result += ", ";
+                if (!is_trivial_v(*it)) {
+                    result += "\n" + indent_str(indent + 1);
                 }
 
-                if (!is_trivial_type_v<typename Container::value_type>()) {
-                    result += "\n" + indent_str(indent);
+                result += format_value(*it, indent + 1);
+                if (multiplicity > 1) {
+                    result += with_color(
+                        " (" + std::to_string(multiplicity) + ")",
+                        Color::BrightBlack
+                    );
                 }
-                result += "}";
 
-                return result;
-            } else {
-                // For other multisets, fall back to regular set formatting
-                return format_brace_container(cont, indent);
+                first = false;
+                it = range.second;
+                ++count;
             }
+
+            if (!is_trivial_type_v<typename Container::value_type>()) {
+                result += "\n" + indent_str(indent);
+            }
+            result += "}";
+
+            return result;
         }
 
         // Format maps
@@ -481,109 +426,51 @@ namespace dbg {
                 return format_map(map, indent);
             }
 
-            // For ordered multimaps (std::multimap), use upper_bound
-            if constexpr (is_multimap<typename std::remove_cv_t<
-                              std::remove_reference_t<Map>>>::value) {
-                std::string result = "{";
-                bool first = true;
-                size_t count = 0;
+            // Use equal_range for both ordered and unordered multimaps
+            std::string result = "{";
+            bool first = true;
+            size_t count = 0;
 
-                auto it = map.begin();
-                while (it != map.end()) {
-                    if (options::max_container_elements != -1 &&
-                        count >= static_cast<size_t>(
-                                     options::max_container_elements
-                                 )) {
-                        result += ", ...";
-                        break;
-                    }
-
-                    auto next_it = map.upper_bound(it->first);
-                    size_t multiplicity = std::distance(it, next_it);
-
-                    if (!first) result += ",";
-                    result += "\n" + indent_str(indent + 1);
-                    result += format_value(it->first, indent + 1);
-
-                    if (multiplicity > 1) {
-                        result += with_color(
-                            " (" + std::to_string(multiplicity) + ")",
-                            Color::BrightBlack
-                        );
-                    }
-
-                    result += " -> [";
-                    bool value_first = true;
-                    for (auto val_it = it; val_it != next_it; ++val_it) {
-                        if (!value_first) result += ", ";
-                        result += format_value(val_it->second, indent + 2);
-                        value_first = false;
-                    }
-                    result += "]";
-
-                    first = false;
-                    it = next_it;
-                    ++count;
+            auto it = map.begin();
+            while (it != map.end()) {
+                if (options::max_container_elements != -1 &&
+                    count >=
+                        static_cast<size_t>(options::max_container_elements)) {
+                    result += ", ...";
+                    break;
                 }
 
-                result += "\n" + indent_str(indent) + "}";
-                return result;
-            } else if constexpr (is_unordered_multimap<
-                                     typename std::remove_cv_t<
-                                         std::remove_reference_t<Map>>>::
-                                     value) {
-                // For unordered multimaps, use equal_range to handle
-                // multiplicity
-                std::string result = "{";
-                bool first = true;
-                size_t count = 0;
+                auto range = map.equal_range(it->first);
+                size_t multiplicity = std::distance(range.first, range.second);
 
-                auto it = map.begin();
-                while (it != map.end()) {
-                    if (options::max_container_elements != -1 &&
-                        count >= static_cast<size_t>(
-                                     options::max_container_elements
-                                 )) {
-                        result += ", ...";
-                        break;
-                    }
+                if (!first) result += ",";
+                result += "\n" + indent_str(indent + 1);
+                result += format_value(it->first, indent + 1);
 
-                    auto range = map.equal_range(it->first);
-                    size_t multiplicity =
-                        std::distance(range.first, range.second);
-
-                    if (!first) result += ",";
-                    result += "\n" + indent_str(indent + 1);
-                    result += format_value(it->first, indent + 1);
-
-                    if (multiplicity > 1) {
-                        result += with_color(
-                            " (" + std::to_string(multiplicity) + ")",
-                            Color::BrightBlack
-                        );
-                    }
-
-                    result += " -> [";
-                    bool value_first = true;
-                    for (auto val_it = range.first; val_it != range.second;
-                         ++val_it) {
-                        if (!value_first) result += ", ";
-                        result += format_value(val_it->second, indent + 2);
-                        value_first = false;
-                    }
-                    result += "]";
-
-                    first = false;
-                    it = range.second;
-                    ++count;
+                if (multiplicity > 1) {
+                    result += with_color(
+                        " (" + std::to_string(multiplicity) + ")",
+                        Color::BrightBlack
+                    );
                 }
 
-                result += "\n" + indent_str(indent) + "}";
-                return result;
-            } else {
-                // For other multimaps, fall back to regular map formatting
-                return format_map(map, indent);
+                result += " -> [";
+                bool value_first = true;
+                for (auto val_it = range.first; val_it != range.second;
+                     ++val_it) {
+                    if (!value_first) result += ", ";
+                    result += format_value(val_it->second, indent + 2);
+                    value_first = false;
+                }
+                result += "]";
+
+                first = false;
+                it = range.second;
+                ++count;
             }
+
+            result += "\n" + indent_str(indent) + "}";
+            return result;
         }
 
         // Main format_value function
