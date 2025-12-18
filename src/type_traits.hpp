@@ -23,12 +23,10 @@
 
 namespace dbg {
     namespace detail {
-
         // Remove cvref helper
         template<typename T>
         using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 
-        // Type name extraction (similar to ref/type_name.hpp)
         template<typename T> constexpr auto func_name() {
             return __PRETTY_FUNCTION__;
         }
@@ -52,7 +50,6 @@ namespace dbg {
             return _type_of_impl<T>();
         }
 
-        // String representation for unsupported types
         template<typename T> std::string unsupported_type() {
             std::string type_name(type_of<T>());
             if (!options::enable_colors) {
@@ -174,6 +171,5 @@ namespace dbg {
         template<>
         struct is_vec_bool_ref<std::vector<bool>::reference> : std::true_type {
         };
-
     } // namespace detail
 } // namespace dbg

@@ -3,30 +3,24 @@
 #include <cstddef>
 
 namespace dbg::options {
-    // Runtime options - can be modified at runtime
     inline bool fixed_float = false;
     inline int float_precision = 6;
     inline bool trivial_string = true;
     inline bool enable_colors = true;
     inline int max_container_elements = 20;
     inline bool show_multiplicity = true;
-
 } // namespace dbg::options
 
 namespace dbg {
-
-    // RAII-based indent level tracker
     class IndentGuard {
       public:
         IndentGuard() { ++get_indent_level(); }
 
         ~IndentGuard() { --get_indent_level(); }
 
-        // Deleted copy operations
         IndentGuard(const IndentGuard &) = delete;
         IndentGuard &operator=(const IndentGuard &) = delete;
 
-        // Get current global indent level
         static int get_current_level() { return get_indent_level(); }
 
       private:
@@ -35,5 +29,4 @@ namespace dbg {
             return indent_level;
         }
     };
-
 } // namespace dbg

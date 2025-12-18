@@ -1,6 +1,6 @@
 # C++ Debug Library
 
-A C++17 header-only debugging library for competitive programming.
+A C++17 header-only debugging library for competitive programming. Partially vibe-coded.
 
 See also: [philip82148/cpp-dump](https://github.com/philip82148/cpp-dump)
 

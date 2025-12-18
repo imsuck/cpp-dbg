@@ -17,11 +17,8 @@
 #define DBG_STRINGIFY(x) #x
 #define DBG_TOSTRING(x) DBG_STRINGIFY(x)
 
-// Core debug function
 namespace dbg {
     namespace detail {
-
-        // Format single argument
         template<typename T>
         std::string format_arg(const char *name, const T &value) {
             std::string result = name;
@@ -30,7 +27,6 @@ namespace dbg {
             return result;
         }
 
-        // Format multiple arguments
         template<typename... Args, size_t... Is>
         std::string format_args_impl(
             const std::tuple<Args...> &args_tuple,
@@ -57,7 +53,6 @@ namespace dbg {
             std::string result = "[";
             bool first = true;
 
-            // Create an indent guard for the arguments
             IndentGuard guard;
 
             // Format each argument on a new line since we have non-trivial args
@@ -77,14 +72,11 @@ namespace dbg {
             const std::array<const char *, sizeof...(Args)> &names,
             const Args &...args
         ) {
-            // Check if any argument is non-trivial
             bool has_non_trivial = (!::dbg::is_trivial_v(args) || ...);
 
             if (has_non_trivial) {
-                // Format like a container with newlines
                 return format_container_like(names, args...);
             } else {
-                // Use the original compact format
                 return format_args_impl(
                     std::forward_as_tuple(args...),
                     names,
@@ -93,7 +85,6 @@ namespace dbg {
             }
         }
 
-        // Main debug function
         inline void debug_output(
             const char *func_name,
             int line,
@@ -107,16 +98,14 @@ namespace dbg {
 
     } // namespace detail
 
-    // Public debug function for single argument
     template<typename T>
     void
-    debug(const char *func_name, int line, const char *name, const T &value) {
+    dbg(const char *func_name, int line, const char *name, const T &value) {
         detail::debug_output(func_name, line, detail::format_arg(name, value));
     }
 
-    // Public debug function for multiple arguments
     template<typename... Args>
-    void debug(
+    void dbg(
         const char *func_name,
         int line,
         const std::array<const char *, sizeof...(Args)> &names,
@@ -128,7 +117,6 @@ namespace dbg {
             detail::format_multiple_args(names, args...)
         );
     }
-
 } // namespace dbg
 
 // Helper macros for argument counting
@@ -143,7 +131,7 @@ namespace dbg {
 #define DBG_DEBUG_1(expr) \
   ((void)([&]() { \
     auto&& DBG_MAKE_NAME(_dbg_val_, __LINE__) = (expr); \
-    ::dbg::debug(DBG_FUNCTION_NAME, __LINE__, #expr, DBG_MAKE_NAME(_dbg_val_, __LINE__)); \
+    ::dbg::dbg(DBG_FUNCTION_NAME, __LINE__, #expr, DBG_MAKE_NAME(_dbg_val_, __LINE__)); \
   }()))
 
 #define DBG_DEBUG_2(expr1, expr2) \
@@ -151,7 +139,7 @@ namespace dbg {
     auto&& DBG_MAKE_NAME(_dbg_val1_, __LINE__) = (expr1); \
     auto&& DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2); \
     std::array<const char*, 2> DBG_MAKE_NAME(_dbg_names_, __LINE__) = {#expr1, #expr2}; \
-    ::dbg::debug(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
+    ::dbg::dbg(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val1_, __LINE__), DBG_MAKE_NAME(_dbg_val2_, __LINE__)); \
   }()))
 
@@ -161,7 +149,7 @@ namespace dbg {
     auto&& DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2); \
     auto&& DBG_MAKE_NAME(_dbg_val3_, __LINE__) = (expr3); \
     std::array<const char*, 3> DBG_MAKE_NAME(_dbg_names_, __LINE__) = {#expr1, #expr2, #expr3}; \
-    ::dbg::debug(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
+    ::dbg::dbg(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val1_, __LINE__), DBG_MAKE_NAME(_dbg_val2_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val3_, __LINE__)); \
   }()))
@@ -174,7 +162,7 @@ namespace dbg {
     auto&& DBG_MAKE_NAME(_dbg_val4_, __LINE__) = (expr4); \
     std::array<const char*, 4> DBG_MAKE_NAME(_dbg_names_, __LINE__) = \
         {#expr1, #expr2, #expr3, #expr4}; \
-    ::dbg::debug(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
+    ::dbg::dbg(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val1_, __LINE__), DBG_MAKE_NAME(_dbg_val2_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val3_, __LINE__), DBG_MAKE_NAME(_dbg_val4_, __LINE__)); \
   }()))
@@ -188,7 +176,7 @@ namespace dbg {
     auto&& DBG_MAKE_NAME(_dbg_val5_, __LINE__) = (expr5); \
     std::array<const char*, 5> DBG_MAKE_NAME(_dbg_names_, __LINE__) = \
         {#expr1, #expr2, #expr3, #expr4, #expr5}; \
-    ::dbg::debug(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
+    ::dbg::dbg(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val1_, __LINE__), DBG_MAKE_NAME(_dbg_val2_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val3_, __LINE__), DBG_MAKE_NAME(_dbg_val4_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val5_, __LINE__)); \
@@ -204,7 +192,7 @@ namespace dbg {
     auto&& DBG_MAKE_NAME(_dbg_val6_, __LINE__) = (expr6); \
     std::array<const char*, 6> DBG_MAKE_NAME(_dbg_names_, __LINE__) = \
         {#expr1, #expr2, #expr3, #expr4, #expr5, #expr6}; \
-    ::dbg::debug(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
+    ::dbg::dbg(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val1_, __LINE__), DBG_MAKE_NAME(_dbg_val2_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val3_, __LINE__), DBG_MAKE_NAME(_dbg_val4_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val5_, __LINE__), DBG_MAKE_NAME(_dbg_val6_, __LINE__)); \
@@ -221,7 +209,7 @@ namespace dbg {
     auto&& DBG_MAKE_NAME(_dbg_val7_, __LINE__) = (expr7); \
     std::array<const char*, 7> DBG_MAKE_NAME(_dbg_names_, __LINE__) = \
         {#expr1, #expr2, #expr3, #expr4, #expr5, #expr6, #expr7}; \
-    ::dbg::debug(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
+    ::dbg::dbg(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val1_, __LINE__), DBG_MAKE_NAME(_dbg_val2_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val3_, __LINE__), DBG_MAKE_NAME(_dbg_val4_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val5_, __LINE__), DBG_MAKE_NAME(_dbg_val6_, __LINE__), \
@@ -240,7 +228,7 @@ namespace dbg {
     auto&& DBG_MAKE_NAME(_dbg_val8_, __LINE__) = (expr8); \
     std::array<const char*, 8> DBG_MAKE_NAME(_dbg_names_, __LINE__) = \
         {#expr1, #expr2, #expr3, #expr4, #expr5, #expr6, #expr7, #expr8}; \
-    ::dbg::debug(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
+    ::dbg::dbg(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val1_, __LINE__), DBG_MAKE_NAME(_dbg_val2_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val3_, __LINE__), DBG_MAKE_NAME(_dbg_val4_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val5_, __LINE__), DBG_MAKE_NAME(_dbg_val6_, __LINE__), \
@@ -270,7 +258,7 @@ namespace dbg {
     auto&& DBG_MAKE_NAME(_dbg_val9_, __LINE__) = (expr9); \
     std::array<const char*, 9> DBG_MAKE_NAME(_dbg_names_, __LINE__) = \
         {#expr1, #expr2, #expr3, #expr4, #expr5, #expr6, #expr7, #expr8, #expr9}; \
-    ::dbg::debug(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
+    ::dbg::dbg(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val1_, __LINE__), DBG_MAKE_NAME(_dbg_val2_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val3_, __LINE__), DBG_MAKE_NAME(_dbg_val4_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val5_, __LINE__), DBG_MAKE_NAME(_dbg_val6_, __LINE__), \
@@ -303,7 +291,7 @@ namespace dbg {
     auto&& DBG_MAKE_NAME(_dbg_val10_, __LINE__) = (expr10); \
     std::array<const char*, 10> DBG_MAKE_NAME(_dbg_names_, __LINE__) = \
         {#expr1, #expr2, #expr3, #expr4, #expr5, #expr6, #expr7, #expr8, #expr9, #expr10}; \
-    ::dbg::debug(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
+    ::dbg::dbg(DBG_FUNCTION_NAME, __LINE__, DBG_MAKE_NAME(_dbg_names_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val1_, __LINE__), DBG_MAKE_NAME(_dbg_val2_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val3_, __LINE__), DBG_MAKE_NAME(_dbg_val4_, __LINE__), \
                  DBG_MAKE_NAME(_dbg_val5_, __LINE__), DBG_MAKE_NAME(_dbg_val6_, __LINE__), \

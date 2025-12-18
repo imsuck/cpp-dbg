@@ -5,13 +5,10 @@
 #include <type_traits>
 
 namespace dbg {
-
     // Forward declaration
     template<typename T> struct is_trivial;
 
     namespace detail {
-
-        // Helper to check if a type is trivial
         template<typename _T, typename T = detail::remove_cvref_t<_T>>
         struct is_trivial_impl {
             static bool value() {
@@ -28,17 +25,14 @@ namespace dbg {
 
     template<typename T> struct is_trivial : detail::is_trivial_impl<T> {};
 
-    // Specialization for tuples - trivial if all element types are trivial
     template<typename... Ts> struct is_trivial<std::tuple<Ts...>> {
         static bool value() { return (is_trivial<Ts>::value() && ...); }
     };
 
-    // Specialization for optional - trivial if the contained type is trivial
     template<typename T> struct is_trivial<std::optional<T>> {
         static bool value() { return is_trivial<T>::value(); }
     };
 
-    // Specialization for pointers - trivial if pointed-to type is trivial
     template<typename T> struct is_trivial<T *> {
         static bool value() { return is_trivial<T>::value(); }
     };
@@ -52,7 +46,6 @@ namespace dbg {
         static bool value() { return is_trivial<T>::value(); }
     };
 
-    // Specialization for smart pointers - trivial if pointed-to type is trivial
     template<typename T> struct is_trivial<std::unique_ptr<T>> {
         static bool value() { return is_trivial<T>::value(); }
     };
@@ -67,9 +60,7 @@ namespace dbg {
         return is_trivial<T>::value();
     }
 
-    // For backward compatibility - type-based check
     template<typename T> inline bool is_trivial_type_v() {
         return is_trivial<T>::value();
     }
-
 } // namespace dbg

@@ -1,6 +1,5 @@
 #pragma once
 
-// Include all necessary standard library headers
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -23,7 +22,6 @@
 #include <utility>
 #include <memory>
 
-// Include all debug library components
 #include "src/options.hpp"
 #include "src/colors.hpp"
 #include "src/type_traits.hpp"

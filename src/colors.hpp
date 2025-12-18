@@ -4,8 +4,6 @@
 #include <string>
 
 namespace dbg {
-
-    // ANSI color codes for output formatting
     enum class Color {
         Reset = 0,
         Black = 30,
@@ -26,7 +24,6 @@ namespace dbg {
         BrightWhite = 97
     };
 
-    // Convert color to ANSI escape sequence string
     inline std::string to_string(Color color) {
         if (color == Color::Reset) {
             return "\033[0m";
@@ -34,9 +31,7 @@ namespace dbg {
         return "\033[" + std::to_string(static_cast<int>(color)) + "m";
     }
 
-    // Stream operator for colors
     inline std::ostream &operator<<(std::ostream &os, Color color) {
         return os << to_string(color);
     }
-
 } // namespace dbg

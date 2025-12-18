@@ -16,18 +16,15 @@
 
 namespace dbg {
     namespace detail {
-
         // Forward declarations
         template<typename T>
         std::string format_value(const T &value, int indent = 0);
         template<typename... Args> std::string format_args(const Args &...args);
 
-        // Helper to format with indentation
         std::string indent_str(int level) {
             return std::string(level * 2, ' ');
         }
 
-        // Helper to wrap value with color
         inline std::string with_color(const std::string &value, Color color) {
             if (!options::enable_colors) {
                 return value;
@@ -68,7 +65,6 @@ namespace dbg {
             return ss.str();
         }
 
-        // Format integers including __int128_t
         template<typename T> std::string format_integer(T value) {
             std::string result;
             if constexpr (std::is_same_v<T, __int128_t> ||
@@ -96,12 +92,10 @@ namespace dbg {
             return with_color(result, Color::Yellow);
         }
 
-        // Format booleans
         inline std::string format_bool(bool value) {
             return with_color(value ? "true" : "false", Color::Yellow);
         }
 
-        // Format characters
         inline std::string format_char(char value) {
             std::string result;
             if (value >= 32 && value <= 126) {
@@ -113,7 +107,6 @@ namespace dbg {
             return with_color(result, Color::Cyan);
         }
 
-        // Format pointers
         template<typename T> std::string format_pointer(T *ptr) {
             if (!ptr) return "nullptr";
             // For void pointers, show just the address
@@ -136,7 +129,6 @@ namespace dbg {
             }
         }
 
-        // Format smart pointers
         template<typename T> std::string format_smart_ptr(const T &ptr) {
             using U = remove_cvref_t<T>;
 
@@ -154,7 +146,6 @@ namespace dbg {
             }
         }
 
-        // Format floating point
         template<typename T> std::string format_float(T value) {
             std::stringstream ss;
             if (options::fixed_float) {
@@ -166,7 +157,6 @@ namespace dbg {
             return with_color(ss.str(), Color::Yellow);
         }
 
-        // Format optional
         template<typename T>
         std::string format_optional(const std::optional<T> &opt) {
             if (opt.has_value()) {
@@ -177,7 +167,6 @@ namespace dbg {
             return with_color("None", Color::Red);
         }
 
-        // Format string
         template<typename T> std::string format_string(const T &str) {
             // Handle null C-strings
             if constexpr (std::is_same_v<T, const char *> ||
@@ -187,7 +176,6 @@ namespace dbg {
             return with_color("\"" + std::string(str) + "\"", Color::Green);
         }
 
-        // Format tuple
         template<typename... Ts, size_t... Is>
         std::string format_tuple_impl(
             const std::tuple<Ts...> &tup,
@@ -242,7 +230,6 @@ namespace dbg {
             return result;
         }
 
-        // Format containers with {}
         template<typename Container>
         std::string
         format_brace_container(const Container &cont, int indent = 0) {
@@ -283,13 +270,13 @@ namespace dbg {
             return format_brace_container(cont, indent);
         }
 
-        // Format queue (front to back) - can't iterate directly
+        // Format queue (front to back)
         template<typename T, typename A>
         std::string format_queue(const std::queue<T, A> &cont, int indent = 0) {
             if (cont.empty()) return "{}";
 
             std::string result = "{";
-            std::queue<T, A> temp = cont; // Copy the queue
+            std::queue<T, A> temp = cont;
 
             bool first = true;
             while (!temp.empty()) {
@@ -303,13 +290,13 @@ namespace dbg {
             return result;
         }
 
-        // Format stack/priority_queue (top to bottom) - can't iterate directly
+        // Format stack/priority_queue (top to bottom)
         template<typename T, typename A>
         std::string format_stack(const std::stack<T, A> &cont, int indent = 0) {
             if (cont.empty()) return "{}";
 
             std::string result = "{";
-            std::stack<T, A> temp = cont; // Copy the stack
+            std::stack<T, A> temp = cont;
 
             bool first = true;
             while (!temp.empty()) {
@@ -323,7 +310,7 @@ namespace dbg {
             return result;
         }
 
-        // Format priority_queue (top to bottom) - can't iterate directly
+        // Format priority_queue (top to bottom)
         template<typename T, typename C, typename A>
         std::string format_priority_queue(
             const std::priority_queue<T, C, A> &cont,
@@ -332,7 +319,7 @@ namespace dbg {
             if (cont.empty()) return "{}";
 
             std::string result = "{";
-            std::priority_queue<T, C, A> temp = cont; // Copy the priority_queue
+            std::priority_queue<T, C, A> temp = cont;
 
             bool first = true;
             while (!temp.empty()) {
@@ -346,13 +333,11 @@ namespace dbg {
             return result;
         }
 
-        // Format sets
         template<typename Container>
         std::string format_set(const Container &cont, int indent = 0) {
             return format_brace_container(cont, indent);
         }
 
-        // Format multisets with multiplicity
         template<typename Container>
         std::string format_multiset(const Container &cont, int indent = 0) {
             if (cont.empty()) return "{}";
@@ -361,7 +346,6 @@ namespace dbg {
                 return format_brace_container(cont, indent);
             }
 
-            // Use equal_range for both ordered and unordered multisets
             std::string result = "{";
             bool first = true;
             size_t count = 0;
@@ -404,7 +388,6 @@ namespace dbg {
             return result;
         }
 
-        // Format maps
         template<typename Map>
         std::string format_map(const Map &map, int indent = 0) {
             if (map.empty()) return with_color("{}", Color::White);
@@ -434,7 +417,6 @@ namespace dbg {
             return result;
         }
 
-        // Format multimaps with multiplicity
         template<typename Map>
         std::string format_multimap(const Map &map, int indent = 0) {
             if (map.empty()) return "{}";
@@ -443,7 +425,6 @@ namespace dbg {
                 return format_map(map, indent);
             }
 
-            // Use equal_range for both ordered and unordered multimaps
             std::string result = "{";
             bool first = true;
             size_t count = 0;
@@ -490,7 +471,6 @@ namespace dbg {
             return result;
         }
 
-        // Main format_value function
         template<typename T>
         std::string format_value(const T &value, int indent) {
             using U = remove_cvref_t<T>;
@@ -519,7 +499,6 @@ namespace dbg {
             } else if constexpr (std::is_floating_point_v<U>) {
                 return format_float(value);
             }
-
             // String types (including C-style strings) - check before pointers
             else if constexpr (is_string<U>::value ||
                                std::is_same_v<U, const char *> ||
@@ -528,85 +507,67 @@ namespace dbg {
             } else if constexpr (std::is_pointer_v<U>) {
                 return format_pointer(value);
             }
-
             // Smart pointers
             else if constexpr (is_smart_pointer<U>::value) {
                 return format_smart_ptr(value);
             }
-
             // Optional
             else if constexpr (is_optional<U>::value) {
                 return format_optional(value);
             }
-
             // Tuple
             else if constexpr (is_tuple<U>::value) {
                 return format_tuple(value);
             }
-
             // Vector-like containers
             else if constexpr (is_vector<U>::value || is_array<U>::value ||
                                is_valarray<U>::value) {
                 return format_array(value, indent);
             }
-
             // Deque
             else if constexpr (is_deque<U>::value) {
                 return format_deque(value, indent);
             }
-
             // Queue
             else if constexpr (is_queue<U>::value) {
                 return format_queue(value, indent);
             }
-
             // Stack
             else if constexpr (is_stack<U>::value) {
                 return format_stack(value, indent);
             }
-
             // Priority Queue
             else if constexpr (is_priority_queue<U>::value) {
                 return format_priority_queue(value, indent);
             }
-
             // Sets
             else if constexpr (is_set<U>::value || is_unordered_set<U>::value) {
                 return format_set(value, indent);
             }
-
             // Multisets
             else if constexpr (is_multiset<U>::value ||
                                is_unordered_multiset<U>::value) {
                 return format_multiset(value, indent);
             }
-
             // Maps
             else if constexpr (is_map<U>::value || is_unordered_map<U>::value) {
                 return format_map(value, indent);
             }
-
             // Multimaps
             else if constexpr (is_multimap<U>::value ||
                                is_unordered_multimap<U>::value) {
                 return format_multimap(value, indent);
             }
-
             // Iterator-based containers (fallback)
             else if constexpr (is_iterator_container<U>::value) {
                 return format_array(value, indent);
             }
-
             // Types with operator<<
             else if constexpr (has_ostream_operator<U>::value) {
                 return format_with_ostream(value);
-            }
-
-            // Unsupported types - check for custom formatters first
-            else {
+            } else {
                 return detail::format_custom(value);
             }
         }
-
     } // namespace detail
 } // namespace dbg
