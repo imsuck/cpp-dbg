@@ -130,7 +130,9 @@ namespace dbg {
                               U,
                               std::weak_ptr<typename T::element_type>>) {
                 if (ptr.expired()) return "expired";
-                return "*<weak_ptr>";
+                // Dereference valid weak_ptr by locking it
+                auto locked = ptr.lock();
+                return "*" + format_value(*locked);
             } else {
                 if (!ptr) return "nullptr";
                 return "*" + format_value(*ptr);
