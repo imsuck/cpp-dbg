@@ -32,3 +32,4 @@
 #include "src/debug_core.hpp"
 
 #define dbg(...) DBG_CHOOSE_MACRO(DBG_COUNT_ARGS(__VA_ARGS__), __VA_ARGS__)
+#define debug()
