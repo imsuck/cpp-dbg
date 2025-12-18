@@ -1,0 +1,17 @@
+Language: Cpp
+AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: Right
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+BasedOnStyle: llvm
+BinPackArguments: false
+BinPackParameters: false
+BreakConstructorInitializers: AfterColon
+IndentCaseLabels: true
+IndentPPDirectives: BeforeHash
+IndentWidth: 4
+NamespaceIndentation: All
+SkipMacroDefinitionBody: true
+SpaceAfterTemplateKeyword: false
