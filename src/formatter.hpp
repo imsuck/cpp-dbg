@@ -116,9 +116,24 @@ namespace dbg {
         // Format pointers
         template<typename T> std::string format_pointer(T *ptr) {
             if (!ptr) return "nullptr";
-            std::stringstream ss;
-            ss << ptr;
-            return "*" + ss.str();
+            // For void pointers, show just the address
+            if constexpr (std::is_same_v<std::remove_cv_t<T>, void>) {
+                std::stringstream ss;
+                ss << ptr;
+                return ss.str();
+            } else {
+                // Try to format the pointed-to value
+                std::string formatted_value = format_value(*ptr);
+                // If it's just the unsupported type message, show address instead
+                std::string unsupported = unsupported_type<T>();
+                if (formatted_value == unsupported) {
+                    std::stringstream ss;
+                    ss << ptr;
+                    return "*" + ss.str();
+                } else {
+                    return "*" + formatted_value;
+                }
+            }
         }
 
         // Format smart pointers

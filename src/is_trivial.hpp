@@ -38,18 +38,29 @@ namespace dbg {
         static bool value() { return is_trivial<T>::value(); }
     };
 
-    // Specialization for pointers - always trivial
+    // Specialization for pointers - trivial if pointed-to type is trivial
     template<typename T> struct is_trivial<T *> {
-        static bool value() { return true; }
+        static bool value() { return is_trivial<T>::value(); }
     };
     template<typename T> struct is_trivial<T *const> {
-        static bool value() { return true; }
+        static bool value() { return is_trivial<T>::value(); }
     };
     template<typename T> struct is_trivial<T *volatile> {
-        static bool value() { return true; }
+        static bool value() { return is_trivial<T>::value(); }
     };
     template<typename T> struct is_trivial<T *const volatile> {
-        static bool value() { return true; }
+        static bool value() { return is_trivial<T>::value(); }
+    };
+
+    // Specialization for smart pointers - trivial if pointed-to type is trivial
+    template<typename T> struct is_trivial<std::unique_ptr<T>> {
+        static bool value() { return is_trivial<T>::value(); }
+    };
+    template<typename T> struct is_trivial<std::shared_ptr<T>> {
+        static bool value() { return is_trivial<T>::value(); }
+    };
+    template<typename T> struct is_trivial<std::weak_ptr<T>> {
+        static bool value() { return is_trivial<T>::value(); }
     };
 
     template<typename T> inline bool is_trivial_v(const T &) {
