@@ -32,6 +32,70 @@ namespace dbg {
             return to_string(color) + value + to_string(Color::Reset);
         }
 
+        // Helper to escape string with colors
+        inline std::string escape_string_with_colors(std::string_view str) {
+            if (!options::enable_colors) return std::string(str);
+            std::string result = to_string(Color::Green); // Start string color
+
+            for (char c : str) {
+                std::string escaped;
+                bool is_escaped = true;
+                switch (c) {
+                    case '\'':
+                        escaped = "\\'";
+                        break;
+                    case '\"':
+                        escaped = "\\\"";
+                        break;
+                    case '\\':
+                        escaped = "\\\\";
+                        break;
+                    case '\0':
+                        escaped = "\\0";
+                        break;
+                    case '\a':
+                        escaped = "\\a";
+                        break;
+                    case '\b':
+                        escaped = "\\b";
+                        break;
+                    case '\f':
+                        escaped = "\\f";
+                        break;
+                    case '\n':
+                        escaped = "\\n";
+                        break;
+                    case '\r':
+                        escaped = "\\r";
+                        break;
+                    case '\t':
+                        escaped = "\\t";
+                        break;
+                    case '\v':
+                        escaped = "\\v";
+                        break;
+                    default:
+                        if (static_cast<unsigned char>(c) < 32 ||
+                            static_cast<unsigned char>(c) > 126) {
+                            std::stringstream ss;
+                            ss << "\\x" << std::hex << std::setw(2)
+                               << std::setfill('0') << (int)(unsigned char)c;
+                            escaped = ss.str();
+                        } else {
+                            is_escaped = false;
+                            result += c;
+                        }
+                }
+
+                if (is_escaped) {
+                    result += to_string(Color::Yellow) + escaped +
+                              to_string(Color::Green);
+                }
+            }
+            result += to_string(Color::Reset);
+            return result;
+        }
+
         // Custom formatter registry
         namespace detail {
             using CustomFormatter = std::function<std::string(const void *)>;
@@ -89,22 +153,68 @@ namespace dbg {
             } else {
                 result = std::to_string(value);
             }
-            return with_color(result, Color::Yellow);
+            // Literals default color
+            return result;
         }
 
         inline std::string format_bool(bool value) {
-            return with_color(value ? "true" : "false", Color::Yellow);
+            return value ? "true" : "false";
         }
 
         inline std::string format_char(char value) {
-            std::string result;
-            if (value >= 32 && value <= 126) {
-                result = "'" + std::string(1, value) + "'";
-            } else {
-                // For non-printable characters, show as integer
-                result = std::to_string(static_cast<int>(value));
+            std::string escaped;
+            bool is_escaped = true;
+            switch (value) {
+                case '\'':
+                    escaped = "\\'";
+                    break;
+                case '\"':
+                    escaped = "\\\"";
+                    break;
+                case '\\':
+                    escaped = "\\\\";
+                    break;
+                case '\0':
+                    escaped = "\\0";
+                    break;
+                case '\a':
+                    escaped = "\\a";
+                    break;
+                case '\b':
+                    escaped = "\\b";
+                    break;
+                case '\f':
+                    escaped = "\\f";
+                    break;
+                case '\n':
+                    escaped = "\\n";
+                    break;
+                case '\r':
+                    escaped = "\\r";
+                    break;
+                case '\t':
+                    escaped = "\\t";
+                    break;
+                case '\v':
+                    escaped = "\\v";
+                    break;
+                default:
+                    if (static_cast<unsigned char>(value) < 32 ||
+                        static_cast<unsigned char>(value) > 126) {
+                        std::stringstream ss;
+                        ss << "\\x" << std::hex << std::setw(2)
+                           << std::setfill('0') << (int)(unsigned char)value;
+                        escaped = ss.str();
+                    } else {
+                        is_escaped = false;
+                    }
             }
-            return with_color(result, Color::Cyan);
+
+            if (is_escaped) {
+                return "'" + with_color(escaped, Color::Yellow) + "'";
+            } else {
+                return "'" + std::string(1, value) + "'";
+            }
         }
 
         template<typename T> std::string format_pointer(T *ptr) {
@@ -113,18 +223,19 @@ namespace dbg {
             if constexpr (std::is_same_v<std::remove_cv_t<T>, void>) {
                 std::stringstream ss;
                 ss << ptr;
-                return ss.str();
+                return with_color(ss.str(), Color::Yellow);
             } else {
                 // Try to format the pointed-to value
                 std::string formatted_value = format_value(*ptr);
-                // If it's just the unsupported type message, show address instead
+                // If it's just the unsupported type message, show address
+                // instead
                 std::string unsupported = unsupported_type<T>();
                 if (formatted_value == unsupported) {
                     std::stringstream ss;
                     ss << ptr;
-                    return "*" + ss.str();
+                    return with_color("*" + ss.str(), Color::Yellow);
                 } else {
-                    return "*" + formatted_value;
+                    return with_color("*", Color::Yellow) + formatted_value;
                 }
             }
         }
@@ -139,10 +250,10 @@ namespace dbg {
                 if (ptr.expired()) return "expired";
                 // Dereference valid weak_ptr by locking it
                 auto locked = ptr.lock();
-                return "*" + format_value(*locked);
+                return with_color("*", Color::Yellow) + format_value(*locked);
             } else {
                 if (!ptr) return "nullptr";
-                return "*" + format_value(*ptr);
+                return with_color("*", Color::Yellow) + format_value(*ptr);
             }
         }
 
@@ -154,7 +265,7 @@ namespace dbg {
                 ss << std::setprecision(options::float_precision);
             }
             ss << value;
-            return with_color(ss.str(), Color::Yellow);
+            return ss.str();
         }
 
         template<typename T>
@@ -173,7 +284,17 @@ namespace dbg {
                           std::is_same_v<T, char *>) {
                 if (!str) return with_color("nullptr", Color::Red);
             }
-            return with_color("\"" + std::string(str) + "\"", Color::Green);
+            // Use custom escaping implementation
+            if constexpr (std::is_same_v<T, const char *> ||
+                          std::is_same_v<T, char *>) {
+                return with_color("\"", Color::Green) +
+                       escape_string_with_colors(str) +
+                       with_color("\"", Color::Green);
+            } else {
+                return with_color("\"", Color::Green) +
+                       escape_string_with_colors(std::string_view(str)) +
+                       with_color("\"", Color::Green);
+            }
         }
 
         template<typename... Ts, size_t... Is>
@@ -244,7 +365,8 @@ namespace dbg {
 
             for (size_t i = 0; i < N; ++i) {
                 if (options::max_container_elements != -1 &&
-                    count >= static_cast<size_t>(options::max_container_elements)) {
+                    count >=
+                        static_cast<size_t>(options::max_container_elements)) {
                     result += with_color(", ...", Color::White);
                     break;
                 }
@@ -507,6 +629,10 @@ namespace dbg {
             return result;
         }
 
+        template<typename T> std::string format_bitset(const T &bs) {
+            return bs.to_string();
+        }
+
         template<typename T>
         std::string format_value(const T &value, int indent) {
             using U = remove_cvref_t<T>;
@@ -535,14 +661,26 @@ namespace dbg {
             } else if constexpr (std::is_floating_point_v<U>) {
                 return format_float(value);
             }
-            // String types (including C-style strings and string literals) - check before pointers
+            // String types (including C-style strings and string literals) -
+            // check before pointers
             else if constexpr (is_string<U>::value ||
                                std::is_same_v<U, const char *> ||
                                std::is_same_v<U, char *> ||
-                               (std::is_array_v<U> && std::is_same_v<std::remove_extent_t<U>, char>) ||
-                               (std::is_array_v<U> && std::is_same_v<std::remove_extent_t<U>, wchar_t>) ||
-                               (std::is_array_v<U> && std::is_same_v<std::remove_extent_t<U>, char16_t>) ||
-                               (std::is_array_v<U> && std::is_same_v<std::remove_extent_t<U>, char32_t>)) {
+                               (std::is_array_v<U> &&
+                                std::
+                                    is_same_v<std::remove_extent_t<U>, char>) ||
+                               (std::is_array_v<U> &&
+                                std::is_same_v<
+                                    std::remove_extent_t<U>,
+                                    wchar_t>) ||
+                               (std::is_array_v<U> &&
+                                std::is_same_v<
+                                    std::remove_extent_t<U>,
+                                    char16_t>) ||
+                               (std::is_array_v<U> &&
+                                std::is_same_v<
+                                    std::remove_extent_t<U>,
+                                    char32_t>)) {
                 return format_string(value);
             } else if constexpr (std::is_pointer_v<U>) {
                 return format_pointer(value);
@@ -601,6 +739,10 @@ namespace dbg {
             else if constexpr (is_multimap<U>::value ||
                                is_unordered_multimap<U>::value) {
                 return format_multimap(value, indent);
+            }
+            // Bitset
+            else if constexpr (is_bitset<U>::value) {
+                return format_bitset(value);
             }
             // Iterator-based containers (fallback)
             else if constexpr (is_iterator_container<U>::value) {

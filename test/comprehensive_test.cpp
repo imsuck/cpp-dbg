@@ -1,5 +1,6 @@
 #include "../debug.hpp"
 #include <array>
+#include <bitset>
 #include <deque>
 #include <map>
 #include <memory>
@@ -135,6 +136,12 @@ int main() {
     // Test __int128 if available
     __int128_t big_int = (__int128_t)123456789LL * 1000000000LL + 123456789LL;
     dbg(big_int);
+
+    // Test bitset
+    std::bitset<8> b8("10101010");
+    std::bitset<16> b16(0xFAFA);
+    dbg(b8);
+    dbg(b16);
 
     return 0;
 }

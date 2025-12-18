@@ -21,7 +21,7 @@ namespace dbg {
     namespace detail {
         template<typename T>
         std::string format_arg(const char *name, const T &value) {
-            std::string result = name;
+            std::string result = with_color(name, Color::Blue);
             result += " = ";
             result += format_value(value);
             return result;
@@ -34,7 +34,9 @@ namespace dbg {
             std::index_sequence<Is...>
         ) {
             std::string arg_str = "[";
-            ((arg_str += (Is == 0 ? "" : ", ") + std::string(names[Is])), ...);
+            ((arg_str +=
+              (Is == 0 ? "" : ", ") + with_color(names[Is], Color::Blue)),
+             ...);
             arg_str += "] = [";
 
             ((arg_str +=
@@ -58,7 +60,8 @@ namespace dbg {
             // Format each argument on a new line since we have non-trivial args
             size_t idx = 0;
             ((result += (first ? "\n" + indent_str(1) : ",\n" + indent_str(1)) +
-                        std::string(names[idx]) + " = " + format_value(args, 1),
+                        with_color(names[idx], Color::Blue) + " = " +
+                        format_value(args, 1),
               first = false,
               ++idx),
              ...);
@@ -105,12 +108,11 @@ namespace dbg {
     }
 
     template<typename... Args>
-    void dbg(
-        const char *func_name,
+    void
+    dbg(const char *func_name,
         int line,
         const std::array<const char *, sizeof...(Args)> &names,
-        const Args &...args
-    ) {
+        const Args &...args) {
         detail::debug_output(
             func_name,
             line,
@@ -302,33 +304,42 @@ namespace dbg {
 // Macros for custom struct formatting (up to 10 fields)
 #define DBG_FORMAT_STRUCT1(Type, field1, ...)                                                      \
   inline std::ostream& operator<<(std::ostream& os, const Type& obj) {                             \
-        return os << #Type "{" #field1 "=" << obj.field1 << "}";                                       \
+        return os << #Type << "{"                   \
+                  << ::dbg::detail::with_color(#field1, ::dbg::Color::Cyan) << "=" << obj.field1 << "}"; \
   }
 
 #define DBG_FORMAT_STRUCT2(Type, field1, field2, ...)                                              \
   inline std::ostream& operator<<(std::ostream& os, const Type& obj) {                             \
-        return os << #Type "{" #field1 "=" << ::dbg::detail::format_value(obj.field1) \
-                  << ", " #field2 "=" << ::dbg::detail::format_value(obj.field2) << "}";     \
+        return os << #Type << "{"                   \
+                  << ::dbg::detail::with_color(#field1, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field1) \
+                  << ", " << ::dbg::detail::with_color(#field2, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field2) << "}"; \
   }
 
 #define DBG_FORMAT_STRUCT3(Type, field1, field2, field3, ...)                                      \
   inline std::ostream& operator<<(std::ostream& os, const Type& obj) {                             \
-        return os << #Type "{" #field1 "=" << ::dbg::detail::format_value(obj.field1)                  \
-                  << ", " #field2 "=" << ::dbg::detail::format_value(obj.field2)                       \
-                  << ", " #field3 "=" << ::dbg::detail::format_value(obj.field3) << "}";                                            \
+        return os << #Type << "{"                   \
+                  << ::dbg::detail::with_color(#field1, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field1) \
+                  << ", " << ::dbg::detail::with_color(#field2, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field2) \
+                  << ", " << ::dbg::detail::with_color(#field3, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field3) << "}"; \
   }
 
 #define DBG_FORMAT_STRUCT4(Type, field1, field2, field3, field4, ...)                              \
   inline std::ostream& operator<<(std::ostream& os, const Type& obj) {                             \
-    return os << #Type "{" #field1 "=" << ::dbg::detail::format_value(obj.field1) << ", " #field2 "=" << ::dbg::detail::format_value(obj.field2)             \
-              << ", " #field3 "=" << ::dbg::detail::format_value(obj.field3) << ", " #field4 "=" << ::dbg::detail::format_value(obj.field4) << "}";          \
+    return os << #Type << "{" \
+              << ::dbg::detail::with_color(#field1, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field1) \
+              << ", " << ::dbg::detail::with_color(#field2, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field2) \
+              << ", " << ::dbg::detail::with_color(#field3, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field3) \
+              << ", " << ::dbg::detail::with_color(#field4, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field4) << "}"; \
   }
 
 #define DBG_FORMAT_STRUCT5(Type, field1, field2, field3, field4, field5, ...)                      \
   inline std::ostream& operator<<(std::ostream& os, const Type& obj) {                             \
-    return os << #Type "{" #field1 "=" << ::dbg::detail::format_value(obj.field1) << ", " #field2 "=" << ::dbg::detail::format_value(obj.field2)             \
-              << ", " #field3 "=" << ::dbg::detail::format_value(obj.field3) << ", " #field4 "=" << ::dbg::detail::format_value(obj.field4)                  \
-              << ", " #field5 "=" << ::dbg::detail::format_value(obj.field5) << "}";                                            \
+    return os << #Type << "{" \
+              << ::dbg::detail::with_color(#field1, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field1) \
+              << ", " << ::dbg::detail::with_color(#field2, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field2) \
+              << ", " << ::dbg::detail::with_color(#field3, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field3) \
+              << ", " << ::dbg::detail::with_color(#field4, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field4) \
+              << ", " << ::dbg::detail::with_color(#field5, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field5) << "}"; \
   }
 
 #define DBG_FORMAT_STRUCT6(                                                    \
@@ -342,9 +353,13 @@ namespace dbg {
     ...                                                                        \
 )              \
   inline std::ostream& operator<<(std::ostream& os, const Type& obj) {                             \
-    return os << #Type "{" #field1 "=" << ::dbg::detail::format_value(obj.field1) << ", " #field2 "=" << ::dbg::detail::format_value(obj.field2)             \
-              << ", " #field3 "=" << ::dbg::detail::format_value(obj.field3) << ", " #field4 "=" << ::dbg::detail::format_value(obj.field4)                  \
-              << ", " #field5 "=" << ::dbg::detail::format_value(obj.field5) << ", " #field6 "=" << ::dbg::detail::format_value(obj.field6) << "}";          \
+    return os << #Type << "{" \
+              << ::dbg::detail::with_color(#field1, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field1) \
+              << ", " << ::dbg::detail::with_color(#field2, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field2) \
+              << ", " << ::dbg::detail::with_color(#field3, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field3) \
+              << ", " << ::dbg::detail::with_color(#field4, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field4) \
+              << ", " << ::dbg::detail::with_color(#field5, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field5) \
+              << ", " << ::dbg::detail::with_color(#field6, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field6) << "}"; \
   }
 
 #define DBG_FORMAT_STRUCT7(                                                    \
@@ -359,10 +374,14 @@ namespace dbg {
     ...                                                                        \
 )      \
   inline std::ostream& operator<<(std::ostream& os, const Type& obj) {                             \
-    return os << #Type "{" #field1 "=" << ::dbg::detail::format_value(obj.field1) << ", " #field2 "=" << ::dbg::detail::format_value(obj.field2)             \
-              << ", " #field3 "=" << ::dbg::detail::format_value(obj.field3) << ", " #field4 "=" << ::dbg::detail::format_value(obj.field4)                  \
-              << ", " #field5 "=" << ::dbg::detail::format_value(obj.field5) << ", " #field6 "=" << ::dbg::detail::format_value(obj.field6)                  \
-              << ", " #field7 "=" << ::dbg::detail::format_value(obj.field7) << "}";                                            \
+    return os << #Type << "{" \
+              << ::dbg::detail::with_color(#field1, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field1) \
+              << ", " << ::dbg::detail::with_color(#field2, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field2) \
+              << ", " << ::dbg::detail::with_color(#field3, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field3) \
+              << ", " << ::dbg::detail::with_color(#field4, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field4) \
+              << ", " << ::dbg::detail::with_color(#field5, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field5) \
+              << ", " << ::dbg::detail::with_color(#field6, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field6) \
+              << ", " << ::dbg::detail::with_color(#field7, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field7) << "}"; \
   }
 
 #define DBG_FORMAT_STRUCT8(                                                    \
@@ -378,10 +397,15 @@ namespace dbg {
     ...                                                                        \
 )                                                                    \
   inline std::ostream& operator<<(std::ostream& os, const Type& obj) {                             \
-    return os << #Type "{" #field1 "=" << ::dbg::detail::format_value(obj.field1) << ", " #field2 "=" << ::dbg::detail::format_value(obj.field2)             \
-              << ", " #field3 "=" << ::dbg::detail::format_value(obj.field3) << ", " #field4 "=" << ::dbg::detail::format_value(obj.field4)                  \
-              << ", " #field5 "=" << ::dbg::detail::format_value(obj.field5) << ", " #field6 "=" << ::dbg::detail::format_value(obj.field6)                  \
-              << ", " #field7 "=" << ::dbg::detail::format_value(obj.field7) << ", " #field8 "=" << ::dbg::detail::format_value(obj.field8) << "}";          \
+    return os << #Type << "{" \
+              << ::dbg::detail::with_color(#field1, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field1) \
+              << ", " << ::dbg::detail::with_color(#field2, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field2) \
+              << ", " << ::dbg::detail::with_color(#field3, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field3) \
+              << ", " << ::dbg::detail::with_color(#field4, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field4) \
+              << ", " << ::dbg::detail::with_color(#field5, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field5) \
+              << ", " << ::dbg::detail::with_color(#field6, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field6) \
+              << ", " << ::dbg::detail::with_color(#field7, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field7) \
+              << ", " << ::dbg::detail::with_color(#field8, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field8) << "}"; \
   }
 
 #define DBG_FORMAT_STRUCT9(                                                    \
@@ -398,11 +422,16 @@ namespace dbg {
     ...                                                                        \
 )                                                            \
   inline std::ostream& operator<<(std::ostream& os, const Type& obj) {                             \
-    return os << #Type "{" #field1 "=" << ::dbg::detail::format_value(obj.field1) << ", " #field2 "=" << ::dbg::detail::format_value(obj.field2)             \
-              << ", " #field3 "=" << ::dbg::detail::format_value(obj.field3) << ", " #field4 "=" << ::dbg::detail::format_value(obj.field4)                  \
-              << ", " #field5 "=" << ::dbg::detail::format_value(obj.field5) << ", " #field6 "=" << ::dbg::detail::format_value(obj.field6)                  \
-              << ", " #field7 "=" << ::dbg::detail::format_value(obj.field7) << ", " #field8 "=" << ::dbg::detail::format_value(obj.field8)                  \
-              << ", " #field9 "=" << ::dbg::detail::format_value(obj.field9) << "}";                                            \
+    return os << #Type << "{" \
+              << ::dbg::detail::with_color(#field1, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field1) \
+              << ", " << ::dbg::detail::with_color(#field2, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field2) \
+              << ", " << ::dbg::detail::with_color(#field3, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field3) \
+              << ", " << ::dbg::detail::with_color(#field4, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field4) \
+              << ", " << ::dbg::detail::with_color(#field5, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field5) \
+              << ", " << ::dbg::detail::with_color(#field6, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field6) \
+              << ", " << ::dbg::detail::with_color(#field7, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field7) \
+              << ", " << ::dbg::detail::with_color(#field8, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field8) \
+              << ", " << ::dbg::detail::with_color(#field9, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field9) << "}"; \
   }
 
 #define DBG_FORMAT_STRUCT10(                                                   \
@@ -420,11 +449,17 @@ namespace dbg {
     ...                                                                        \
 )                                                  \
   inline std::ostream& operator<<(std::ostream& os, const Type& obj) {                             \
-    return os << #Type "{" #field1 "=" << ::dbg::detail::format_value(obj.field1) << ", " #field2 "=" << ::dbg::detail::format_value(obj.field2)             \
-              << ", " #field3 "=" << ::dbg::detail::format_value(obj.field3) << ", " #field4 "=" << ::dbg::detail::format_value(obj.field4)                  \
-              << ", " #field5 "=" << ::dbg::detail::format_value(obj.field5) << ", " #field6 "=" << ::dbg::detail::format_value(obj.field6)                  \
-              << ", " #field7 "=" << ::dbg::detail::format_value(obj.field7) << ", " #field8 "=" << ::dbg::detail::format_value(obj.field8)                  \
-              << ", " #field9 "=" << ::dbg::detail::format_value(obj.field9) << ", " #field10 "=" << ::dbg::detail::format_value(obj.field10) << "}";        \
+    return os << #Type << "{" \
+              << ::dbg::detail::with_color(#field1, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field1) \
+              << ", " << ::dbg::detail::with_color(#field2, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field2) \
+              << ", " << ::dbg::detail::with_color(#field3, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field3) \
+              << ", " << ::dbg::detail::with_color(#field4, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field4) \
+              << ", " << ::dbg::detail::with_color(#field5, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field5) \
+              << ", " << ::dbg::detail::with_color(#field6, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field6) \
+              << ", " << ::dbg::detail::with_color(#field7, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field7) \
+              << ", " << ::dbg::detail::with_color(#field8, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field8) \
+              << ", " << ::dbg::detail::with_color(#field9, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field9) \
+              << ", " << ::dbg::detail::with_color(#field10, ::dbg::Color::Cyan) << "=" << ::dbg::detail::format_value(obj.field10) << "}"; \
   }
 
 // Automatic dispatch macro using buffer arguments
