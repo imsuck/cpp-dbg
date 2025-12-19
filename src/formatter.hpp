@@ -620,7 +620,7 @@ namespace dbg {
                 bool value_first = true;
                 for (auto val_it = range.first; val_it != range.second;
                      ++val_it) {
-                    IndentGuard guard;
+                    IndentGuard guard2;
                     if (!value_first) result += ", ";
                     result += format_value(val_it->second);
                     value_first = false;
