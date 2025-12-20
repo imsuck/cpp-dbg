@@ -326,7 +326,9 @@ namespace dbg {
 
         template<typename Container>
         std::string format_array(const Container &cont) {
-            if (cont.empty()) return with_color("[]", Color::BrightBlack);
+            using std::begin;
+            using std::end;
+            auto it = begin(cont);
 
             std::string result = with_color("[", Color::BrightBlack);
             bool first = true;
@@ -351,7 +353,7 @@ namespace dbg {
                 ++count;
             }
 
-            if (!is_trivial_type_v<typename Container::value_type>()) {
+            if (!is_trivial_type_v<remove_cvref_t<decltype(*it)>>()) {
                 result += "\n" + indent_str(IndentGuard::get_current_level());
             }
             result += with_color("]", Color::BrightBlack);
@@ -363,8 +365,6 @@ namespace dbg {
         template<typename T> std::string format_c_array(const T &arr) {
             using ElementType = std::remove_extent_t<T>;
             constexpr size_t N = std::extent_v<T>;
-
-            if (N == 0) return with_color("[]", Color::BrightBlack);
 
             std::string result = with_color("[", Color::BrightBlack);
             bool first = true;
@@ -399,8 +399,6 @@ namespace dbg {
 
         template<typename Container>
         std::string format_brace_container(const Container &cont) {
-            if (cont.empty()) return with_color("{}", Color::BrightBlack);
-
             std::string result = with_color("{", Color::BrightBlack);
             bool first = true;
             size_t count = 0;
@@ -441,8 +439,6 @@ namespace dbg {
         // Format queue (front to back)
         template<typename T, typename A>
         std::string format_queue(const std::queue<T, A> &cont) {
-            if (cont.empty()) return with_color("{}", Color::BrightBlack);
-
             std::string result = with_color("{", Color::BrightBlack);
             std::queue<T, A> temp = cont;
 
@@ -461,8 +457,6 @@ namespace dbg {
         // Format stack/priority_queue (top to bottom)
         template<typename T, typename A>
         std::string format_stack(const std::stack<T, A> &cont) {
-            if (cont.empty()) return with_color("{}", Color::BrightBlack);
-
             std::string result = with_color("{", Color::BrightBlack);
             std::stack<T, A> temp = cont;
 
@@ -482,8 +476,6 @@ namespace dbg {
         template<typename T, typename C, typename A>
         std::string
         format_priority_queue(const std::priority_queue<T, C, A> &cont) {
-            if (cont.empty()) return with_color("{}", Color::BrightBlack);
-
             std::string result = with_color("{", Color::BrightBlack);
             std::priority_queue<T, C, A> temp = cont;
 
@@ -506,8 +498,6 @@ namespace dbg {
 
         template<typename Container>
         std::string format_multiset(const Container &cont) {
-            if (cont.empty()) return with_color("{}", Color::BrightBlack);
-
             if (!options::show_multiplicity) {
                 return format_brace_container(cont);
             }
@@ -557,8 +547,6 @@ namespace dbg {
         }
 
         template<typename Map> std::string format_map(const Map &map) {
-            if (map.empty()) return with_color("{}", Color::BrightBlack);
-
             std::string result = with_color("{", Color::BrightBlack);
             bool first = true;
             size_t count = 0;
@@ -587,8 +575,6 @@ namespace dbg {
         }
 
         template<typename Map> std::string format_multimap(const Map &map) {
-            if (map.empty()) return with_color("{}", Color::BrightBlack);
-
             if (!options::show_multiplicity) {
                 return format_map(map);
             }
