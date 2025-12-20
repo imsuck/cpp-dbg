@@ -19,6 +19,7 @@
 #include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <valarray>
 #include <vector>
 
@@ -69,6 +70,10 @@ namespace dbg {
         template<typename T> struct is_optional : std::false_type {};
         template<typename T>
         struct is_optional<std::optional<T>> : std::true_type {};
+
+        template<typename T> struct is_pair : std::false_type {};
+        template<typename T1, typename T2>
+        struct is_pair<std::pair<T1, T2>> : std::true_type {};
 
         template<typename T> struct is_tuple : std::false_type {};
         template<typename... Ts>

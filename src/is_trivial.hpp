@@ -29,6 +29,12 @@ namespace dbg {
         static bool value() { return (is_trivial<Ts>::value() && ...); }
     };
 
+    template<typename T1, typename T2> struct is_trivial<std::pair<T1, T2>> {
+        static bool value() {
+            return is_trivial<T1>::value() && is_trivial<T2>::value();
+        }
+    };
+
     template<typename T> struct is_trivial<std::optional<T>> {
         static bool value() { return is_trivial<T>::value(); }
     };

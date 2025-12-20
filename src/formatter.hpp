@@ -320,6 +320,16 @@ namespace dbg {
             );
         }
 
+        template<typename T1, typename T2>
+        std::string format_pair(const std::pair<T1, T2> &p) {
+            std::string result = with_color("(", Color::White);
+            result += format_value(p.first);
+            result += with_color(", ", Color::White);
+            result += format_value(p.second);
+            result += with_color(")", Color::White);
+            return result;
+        }
+
         template<typename Container>
         std::string format_array(const Container &cont) {
             if (cont.empty()) return with_color("[]", Color::White);
@@ -698,6 +708,10 @@ namespace dbg {
             // Optional
             else if constexpr (is_optional<U>::value) {
                 return format_optional(value);
+            }
+            // Pair
+            else if constexpr (is_pair<U>::value) {
+                return format_pair(value);
             }
             // Tuple
             else if constexpr (is_tuple<U>::value) {
