@@ -1,8 +1,9 @@
 #pragma once
 
+#include <type_traits>
+
 #include "options.hpp"
 #include "type_traits.hpp"
-#include <type_traits>
 
 namespace dbg {
     // Forward declaration

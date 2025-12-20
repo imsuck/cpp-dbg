@@ -1,7 +1,5 @@
 #pragma once
 
-#include "colors.hpp"
-#include "options.hpp"
 #include <array>
 #include <bitset>
 #include <deque>
@@ -16,12 +14,14 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
-#include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <valarray>
 #include <vector>
+
+#include "colors.hpp"
+#include "options.hpp"
 
 namespace dbg {
     namespace detail {
