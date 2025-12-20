@@ -37,11 +37,12 @@ namespace dbg {
         return os << to_string(color);
     }
 
-    inline std::string with_color(const std::string &value, Color color) {
-        if (!options::enable_colors) {
-            return value;
+    namespace detail {
+        inline std::string with_color(const std::string &value, Color color) {
+            if (!options::enable_colors) {
+                return value;
+            }
+            return to_string(color) + value + to_string(Color::Reset);
         }
-        return to_string(color) + value + to_string(Color::Reset);
-    }
-
+    } // namespace detail
 } // namespace dbg

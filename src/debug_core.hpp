@@ -6,7 +6,6 @@
 
 #include "colors.hpp"
 #include "formatter.hpp"
-#include "options.hpp"
 
 // Helper macro to get function name
 #define DBG_FUNCTION_NAME __func__

@@ -15,6 +15,24 @@
 #include "type_traits.hpp"
 
 namespace dbg {
+    class IndentGuard {
+      public:
+        IndentGuard() { ++get_indent_level(); }
+
+        ~IndentGuard() { --get_indent_level(); }
+
+        IndentGuard(const IndentGuard &) = delete;
+        IndentGuard &operator=(const IndentGuard &) = delete;
+
+        static int get_current_level() { return get_indent_level(); }
+
+      private:
+        static int &get_indent_level() {
+            static thread_local int indent_level = 0;
+            return indent_level;
+        }
+    };
+
     namespace detail {
         // Forward declarations
         template<typename T> std::string format_value(const T &value);
@@ -91,21 +109,6 @@ namespace dbg {
             result += to_string(Color::Reset);
             return result;
         }
-
-        // Custom formatter registry
-        namespace detail {
-            using CustomFormatter = std::function<std::string(const void *)>;
-            inline std::unordered_map<size_t, CustomFormatter>
-                custom_formatters;
-
-            template<typename T> std::string format_custom(const T &value) {
-                auto it = custom_formatters.find(typeid(T).hash_code());
-                if (it != custom_formatters.end()) {
-                    return it->second(&value);
-                }
-                return unsupported_type<T>();
-            }
-        } // namespace detail
 
         // Check if type has operator<<
         template<typename T, typename = void>
@@ -607,17 +610,26 @@ namespace dbg {
                     );
                 }
 
-                result += with_color(" -> [", Color::BrightBlack);
-                bool value_first = true;
+                result += with_color(" -> ", Color::BrightBlack);
+                std::vector<decltype(*it->second)> values;
+                values.reserve(multiplicity);
                 for (auto val_it = range.first; val_it != range.second;
                      ++val_it) {
-                    IndentGuard guard2;
-                    if (!value_first)
-                        result += with_color(", ", Color::BrightBlack);
-                    result += format_value(val_it->second);
-                    value_first = false;
+                    values.push_back(val_it->second);
                 }
-                result += with_color("]", Color::BrightBlack);
+                result += format_value(values);
+
+                // result += with_color(" -> [", Color::BrightBlack);
+                // bool value_first = true;
+                // for (auto val_it = range.first; val_it != range.second;
+                //      ++val_it) {
+                //     IndentGuard guard2;
+                //     if (!value_first)
+                //         result += with_color(", ", Color::BrightBlack);
+                //     result += format_value(val_it->second);
+                //     value_first = false;
+                // }
+                // result += with_color("]", Color::BrightBlack);
 
                 first = false;
                 it = range.second;
@@ -755,7 +767,7 @@ namespace dbg {
             else if constexpr (has_ostream_operator<U>::value) {
                 return format_with_ostream(value);
             } else {
-                return detail::format_custom(value);
+                return unsupported_type<T>();
             }
         }
     } // namespace detail
