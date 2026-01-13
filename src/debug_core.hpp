@@ -136,18 +136,18 @@ namespace dbg {
 #define DBG_CHOOSE_MACRO(count, ...) DBG_CONCAT(DBG_DEBUG_, count)(__VA_ARGS__)
 
 #define DBG_DEBUG_1(expr)                                                      \
-    ((void)([&]() {                                                            \
+    [&](auto &&func_name) {                                                    \
         auto &&DBG_MAKE_NAME(_dbg_val_, __LINE__) = (expr);                    \
         ::dbg::dbg(                                                            \
-            DBG_FUNCTION_NAME,                                                 \
+            func_name,                                                         \
             __LINE__,                                                          \
             #expr,                                                             \
             DBG_MAKE_NAME(_dbg_val_, __LINE__)                                 \
         );                                                                     \
-    }()))
+    }(DBG_FUNCTION_NAME)
 
 #define DBG_DEBUG_2(expr1, expr2)                                              \
-    ((void)([&]() {                                                            \
+    [&](auto &&func_name) {                                                    \
         auto &&DBG_MAKE_NAME(_dbg_val1_, __LINE__) = (expr1);                  \
         auto &&DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2);                  \
         std::array<const char *, 2> DBG_MAKE_NAME(_dbg_names_, __LINE__) = {   \
@@ -155,16 +155,16 @@ namespace dbg {
             #expr2                                                             \
         };                                                                     \
         ::dbg::dbg(                                                            \
-            DBG_FUNCTION_NAME,                                                 \
+            func_name,                                                         \
             __LINE__,                                                          \
             DBG_MAKE_NAME(_dbg_names_, __LINE__),                              \
             DBG_MAKE_NAME(_dbg_val1_, __LINE__),                               \
             DBG_MAKE_NAME(_dbg_val2_, __LINE__)                                \
         );                                                                     \
-    }()))
+    }(DBG_FUNCTION_NAME)
 
 #define DBG_DEBUG_3(expr1, expr2, expr3)                                       \
-    ((void)([&]() {                                                            \
+    [&](auto &&func_name) {                                                    \
         auto &&DBG_MAKE_NAME(_dbg_val1_, __LINE__) = (expr1);                  \
         auto &&DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2);                  \
         auto &&DBG_MAKE_NAME(_dbg_val3_, __LINE__) = (expr3);                  \
@@ -173,17 +173,17 @@ namespace dbg {
             __LINE__                                                           \
         ) = {#expr1, #expr2, #expr3};                                          \
         ::dbg::dbg(                                                            \
-            DBG_FUNCTION_NAME,                                                 \
+            func_name,                                                         \
             __LINE__,                                                          \
             DBG_MAKE_NAME(_dbg_names_, __LINE__),                              \
             DBG_MAKE_NAME(_dbg_val1_, __LINE__),                               \
             DBG_MAKE_NAME(_dbg_val2_, __LINE__),                               \
             DBG_MAKE_NAME(_dbg_val3_, __LINE__)                                \
         );                                                                     \
-    }()))
+    }(DBG_FUNCTION_NAME)
 
 #define DBG_DEBUG_4(expr1, expr2, expr3, expr4)                                \
-    ((void)([&]() {                                                            \
+    [&](auto &&func_name) {                                                    \
         auto &&DBG_MAKE_NAME(_dbg_val1_, __LINE__) = (expr1);                  \
         auto &&DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2);                  \
         auto &&DBG_MAKE_NAME(_dbg_val3_, __LINE__) = (expr3);                  \
@@ -193,7 +193,7 @@ namespace dbg {
             __LINE__                                                           \
         ) = {#expr1, #expr2, #expr3, #expr4};                                  \
         ::dbg::dbg(                                                            \
-            DBG_FUNCTION_NAME,                                                 \
+            func_name,                                                         \
             __LINE__,                                                          \
             DBG_MAKE_NAME(_dbg_names_, __LINE__),                              \
             DBG_MAKE_NAME(_dbg_val1_, __LINE__),                               \
@@ -201,10 +201,10 @@ namespace dbg {
             DBG_MAKE_NAME(_dbg_val3_, __LINE__),                               \
             DBG_MAKE_NAME(_dbg_val4_, __LINE__)                                \
         );                                                                     \
-    }()))
+    }(DBG_FUNCTION_NAME)
 
 #define DBG_DEBUG_5(expr1, expr2, expr3, expr4, expr5)                         \
-    ((void)([&]() {                                                            \
+    [&](auto &&func_name) {                                                    \
         auto &&DBG_MAKE_NAME(_dbg_val1_, __LINE__) = (expr1);                  \
         auto &&DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2);                  \
         auto &&DBG_MAKE_NAME(_dbg_val3_, __LINE__) = (expr3);                  \
@@ -215,7 +215,7 @@ namespace dbg {
             __LINE__                                                           \
         ) = {#expr1, #expr2, #expr3, #expr4, #expr5};                          \
         ::dbg::dbg(                                                            \
-            DBG_FUNCTION_NAME,                                                 \
+            func_name,                                                         \
             __LINE__,                                                          \
             DBG_MAKE_NAME(_dbg_names_, __LINE__),                              \
             DBG_MAKE_NAME(_dbg_val1_, __LINE__),                               \
@@ -224,10 +224,10 @@ namespace dbg {
             DBG_MAKE_NAME(_dbg_val4_, __LINE__),                               \
             DBG_MAKE_NAME(_dbg_val5_, __LINE__)                                \
         );                                                                     \
-    }()))
+    }(DBG_FUNCTION_NAME)
 
 #define DBG_DEBUG_6(expr1, expr2, expr3, expr4, expr5, expr6)                  \
-    ((void)([&]() {                                                            \
+    [&](auto &&func_name) {                                                    \
         auto &&DBG_MAKE_NAME(_dbg_val1_, __LINE__) = (expr1);                  \
         auto &&DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2);                  \
         auto &&DBG_MAKE_NAME(_dbg_val3_, __LINE__) = (expr3);                  \
@@ -239,7 +239,7 @@ namespace dbg {
             __LINE__                                                           \
         ) = {#expr1, #expr2, #expr3, #expr4, #expr5, #expr6};                  \
         ::dbg::dbg(                                                            \
-            DBG_FUNCTION_NAME,                                                 \
+            func_name,                                                         \
             __LINE__,                                                          \
             DBG_MAKE_NAME(_dbg_names_, __LINE__),                              \
             DBG_MAKE_NAME(_dbg_val1_, __LINE__),                               \
@@ -249,10 +249,10 @@ namespace dbg {
             DBG_MAKE_NAME(_dbg_val5_, __LINE__),                               \
             DBG_MAKE_NAME(_dbg_val6_, __LINE__)                                \
         );                                                                     \
-    }()))
+    }(DBG_FUNCTION_NAME)
 
 #define DBG_DEBUG_7(expr1, expr2, expr3, expr4, expr5, expr6, expr7)           \
-    ((void)([&]() {                                                            \
+    [&](auto &&func_name) {                                                    \
         auto &&DBG_MAKE_NAME(_dbg_val1_, __LINE__) = (expr1);                  \
         auto &&DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2);                  \
         auto &&DBG_MAKE_NAME(_dbg_val3_, __LINE__) = (expr3);                  \
@@ -265,7 +265,7 @@ namespace dbg {
             __LINE__                                                           \
         ) = {#expr1, #expr2, #expr3, #expr4, #expr5, #expr6, #expr7};          \
         ::dbg::dbg(                                                            \
-            DBG_FUNCTION_NAME,                                                 \
+            func_name,                                                         \
             __LINE__,                                                          \
             DBG_MAKE_NAME(_dbg_names_, __LINE__),                              \
             DBG_MAKE_NAME(_dbg_val1_, __LINE__),                               \
@@ -276,10 +276,10 @@ namespace dbg {
             DBG_MAKE_NAME(_dbg_val6_, __LINE__),                               \
             DBG_MAKE_NAME(_dbg_val7_, __LINE__)                                \
         );                                                                     \
-    }()))
+    }(DBG_FUNCTION_NAME)
 
 #define DBG_DEBUG_8(expr1, expr2, expr3, expr4, expr5, expr6, expr7, expr8)    \
-    ((void)([&]() {                                                            \
+    [&](auto &&func_name) {                                                    \
         auto &&DBG_MAKE_NAME(_dbg_val1_, __LINE__) = (expr1);                  \
         auto &&DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2);                  \
         auto &&DBG_MAKE_NAME(_dbg_val3_, __LINE__) = (expr3);                  \
@@ -293,7 +293,7 @@ namespace dbg {
             __LINE__                                                           \
         ) = {#expr1, #expr2, #expr3, #expr4, #expr5, #expr6, #expr7, #expr8};  \
         ::dbg::dbg(                                                            \
-            DBG_FUNCTION_NAME,                                                 \
+            func_name,                                                         \
             __LINE__,                                                          \
             DBG_MAKE_NAME(_dbg_names_, __LINE__),                              \
             DBG_MAKE_NAME(_dbg_val1_, __LINE__),                               \
@@ -305,7 +305,7 @@ namespace dbg {
             DBG_MAKE_NAME(_dbg_val7_, __LINE__),                               \
             DBG_MAKE_NAME(_dbg_val8_, __LINE__)                                \
         );                                                                     \
-    }()))
+    }(DBG_FUNCTION_NAME)
 
 #define DBG_DEBUG_9(                                                           \
     expr1,                                                                     \
@@ -318,7 +318,7 @@ namespace dbg {
     expr8,                                                                     \
     expr9                                                                      \
 )                                                                              \
-    ((void)([&]() {                                                            \
+    [&](auto &&func_name) {                                                    \
         auto &&DBG_MAKE_NAME(_dbg_val1_, __LINE__) = (expr1);                  \
         auto &&DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2);                  \
         auto &&DBG_MAKE_NAME(_dbg_val3_, __LINE__) = (expr3);                  \
@@ -340,7 +340,7 @@ namespace dbg {
             #expr9                                                             \
         };                                                                     \
         ::dbg::dbg(                                                            \
-            DBG_FUNCTION_NAME,                                                 \
+            func_name,                                                         \
             __LINE__,                                                          \
             DBG_MAKE_NAME(_dbg_names_, __LINE__),                              \
             DBG_MAKE_NAME(_dbg_val1_, __LINE__),                               \
@@ -353,7 +353,7 @@ namespace dbg {
             DBG_MAKE_NAME(_dbg_val8_, __LINE__),                               \
             DBG_MAKE_NAME(_dbg_val9_, __LINE__)                                \
         );                                                                     \
-    }()))
+    }(DBG_FUNCTION_NAME)
 
 #define DBG_DEBUG_10(                                                          \
     expr1,                                                                     \
@@ -367,7 +367,7 @@ namespace dbg {
     expr9,                                                                     \
     expr10                                                                     \
 )                                                                              \
-    ((void)([&]() {                                                            \
+    [&](auto &&func_name) {                                                    \
         auto &&DBG_MAKE_NAME(_dbg_val1_, __LINE__) = (expr1);                  \
         auto &&DBG_MAKE_NAME(_dbg_val2_, __LINE__) = (expr2);                  \
         auto &&DBG_MAKE_NAME(_dbg_val3_, __LINE__) = (expr3);                  \
@@ -391,7 +391,7 @@ namespace dbg {
             #expr10                                                            \
         };                                                                     \
         ::dbg::dbg(                                                            \
-            DBG_FUNCTION_NAME,                                                 \
+            func_name,                                                         \
             __LINE__,                                                          \
             DBG_MAKE_NAME(_dbg_names_, __LINE__),                              \
             DBG_MAKE_NAME(_dbg_val1_, __LINE__),                               \
@@ -405,7 +405,7 @@ namespace dbg {
             DBG_MAKE_NAME(_dbg_val9_, __LINE__),                               \
             DBG_MAKE_NAME(_dbg_val10_, __LINE__)                               \
         );                                                                     \
-    }()))
+    }(DBG_FUNCTION_NAME)
 
 // Macros for custom struct formatting (up to 10 fields)
 #define DBG_FORMAT_STRUCT1(Type, field1, ...)                                  \
